@@ -121,10 +121,13 @@ export async function getFriendRequests(req, res) {
       status: "pending",
     }).populate("sender", "fullName profilePic nativeLanguage learningLanguage");
 
-    const acceptedReqs = await FriendRequest.find({
+    const acceptedReqsRaw = await FriendRequest.find({
       sender: req.user.id,
       status: "accepted",
     }).populate("recipient", "fullName profilePic");
+
+    // ✅ Filter out any null recipient
+    const acceptedReqs = acceptedReqsRaw.filter(req => req.recipient !== null);
 
     res.status(200).json({ incomingReqs, acceptedReqs });
   } catch (error) {
@@ -132,6 +135,7 @@ export async function getFriendRequests(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
 
 export async function getOutgoingFriendReqs(req, res) {
   try {
